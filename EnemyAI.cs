@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -28,12 +28,38 @@ public class EnemyAI : MonoBehaviour
         GetNewDestination();
     }
 
+    private void Update()
+    {
+        CheckLineOfSight();
+        if (!isChasing)
+        {
+            if (Vector3.Distance(transform.position, currentDestination) > radius)
+            {
+                transform.LookAt(currentDestination);
+                transform.position = Vector3.MoveTowards(transform.position, currentDestination, speed * Time.deltaTime);
+            }
+            else
+                GetNewDestination();
+        }
+        else
+        {
+            transform.LookAt(player.transform.position);
+            if (Vector3.Distance(transform.position, player.transform.position) <= atkRange)
+            {
+                isChasing = false;
+                // Attack
+                if (canAttack)
+                    StartCoroutine(Attack());
+            }
+            else
+                transform.position = Vector3.MoveTowards(transform.position, player.transform.position, speed * Time.deltaTime);
+        }
+    }
+
     void GetNewDestination()
     {
-        currentDestination = new Vector3(Random.value * 50f - 25f, 0f, Random.value * 50f - 25f);
+        currentDestination = new Vector3(Mathf.Clamp(Random.Range(-25f, 25f), -lineOfSight, lineOfSight), 0f, Mathf.Clamp(Random.Range(-25f, 25f), -lineOfSight, lineOfSight));
         isChasing = false;
-        StopCoroutine(MoveToDestination());
-        StartCoroutine(MoveToDestination());
     }
 
     void CheckLineOfSight()
@@ -62,35 +88,6 @@ public class EnemyAI : MonoBehaviour
         Debug.Log($"{this.name} has taken {damage} damage!");
         if (hp <= 0)
             isDead = true;
-    }
-
-    IEnumerator MoveToDestination()
-    {
-        while (Vector3.Distance(transform.position, currentDestination) > (radius))
-        {
-            if (!isChasing)
-            {
-                transform.LookAt(currentDestination);
-                transform.position = Vector3.MoveTowards(transform.position, currentDestination, speed * Time.deltaTime);
-                CheckLineOfSight();
-                yield return new WaitForEndOfFrame();
-            }
-            else
-            {
-                transform.LookAt(player.transform.position);
-                if (Vector3.Distance(transform.position, currentDestination) <= atkRange)
-                {
-                    isChasing = false;
-                    // Attack
-                    if (canAttack)
-                        StartCoroutine(Attack());
-                }
-                transform.position = Vector3.MoveTowards(transform.position, player.transform.position, speed * Time.deltaTime);
-                yield return new WaitForEndOfFrame();
-            }
-        }
-        
-        GetNewDestination();
     }
 
     IEnumerator Attack()
