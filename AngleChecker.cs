@@ -28,15 +28,13 @@ public class AngleChecker : MonoBehaviour
         float dot = Vector3.Dot(targetDirection, transform.forward);
         float angle = Mathf.Acos(dot) * Mathf.Rad2Deg;
 
-        Debug.Log($"Angle between player forward and target = {angle}");
-
         Vector3 normalizedDirection = target.transform.position - transform.position;
 
         float targetPosition = Vector3.Cross(transform.forward, normalizedDirection).y;
 
         if (targetPosition > 0)
-            Debug.Log($"Target is to the right of player.");
+            Debug.Log($"Target is to the right of player, and the angle between player forward and target = {angle}");
         else if (targetPosition < 0)
-            Debug.Log($"Target is to the left of player.");
+            Debug.Log($"Target is to the left of player, and the angle between player forward and target = {angle}");
     }
 }
