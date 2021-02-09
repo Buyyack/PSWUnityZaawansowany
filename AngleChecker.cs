@@ -1,10 +1,11 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class AngleChecker : MonoBehaviour
 {
-    public GameObject target;
+    public Target target;
+    public float radius = 1f;
 
     // Start is called before the first frame update
     void Start()
@@ -20,18 +21,37 @@ public class AngleChecker : MonoBehaviour
             CheckAngle();
     }
 
+    private void FixedUpdate()
+    {
+        if (Vector3.Distance(transform.position, target.transform.position) < (radius + target.radius))
+            Debug.Log($"Collided with {target.name}!");
+    }
+
     public void CheckAngle()
     {
+        Vector3 targetDirection = target.transform.position - transform.position;
+
         //Angle math
-        float dot = Vector3.Dot((target.transform.position - transform.position).normalized, transform.forward);
+        float dot = Vector3.Dot(targetDirection.normalized, transform.forward);
         float angle = Mathf.Acos(dot) * Mathf.Rad2Deg;
 
         //Direction math
-        float targetPosition = Vector3.Cross(transform.forward, target.transform.position - transform.position).y;
+        float targetVerticalPosition = Vector3.Cross(transform.forward, targetDirection).y;
+        float targetHorizontalPosition = Vector3.Cross(transform.forward, targetDirection).x;
+        Debug.Log($"vert {targetVerticalPosition}, hor {targetHorizontalPosition}");
 
-        if (targetPosition > 0)
-            Debug.Log($"Target is to the right of player, and the angle between player forward and target = {angle}");
-        else if (targetPosition < 0)
-            Debug.Log($"Target is to the left of player, and the angle between player forward and target = {angle}");
+        string direction = "";
+
+        if (targetHorizontalPosition > 0)
+            direction += "Forward-";
+        else if (targetHorizontalPosition < 0)
+            direction += "Behind-";
+
+        if (targetVerticalPosition > 0)
+            direction += "Right";
+        else if (targetVerticalPosition < 0)
+            direction += "Left";
+
+        Debug.Log($"Target location is: {direction} and the angle between player forward and target = {angle}");
     }
 }
