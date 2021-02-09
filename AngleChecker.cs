@@ -18,20 +18,16 @@ public class AngleChecker : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.E))
             CheckAngle();
-
     }
 
     public void CheckAngle()
     {
-        Vector3 targetDirection = (target.transform.position - transform.position).normalized;
-        
         //Angle math
-        float dot = Vector3.Dot(targetDirection, transform.forward);
+        float dot = Vector3.Dot((target.transform.position - transform.position).normalized, transform.forward);
         float angle = Mathf.Acos(dot) * Mathf.Rad2Deg;
-        
+
         //Direction math
-        Vector3 normalizedDirection = target.transform.position - transform.position;
-        float targetPosition = Vector3.Cross(transform.forward, normalizedDirection).y;
+        float targetPosition = Vector3.Cross(transform.forward, target.transform.position - transform.position).y;
 
         if (targetPosition > 0)
             Debug.Log($"Target is to the right of player, and the angle between player forward and target = {angle}");
