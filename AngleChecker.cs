@@ -24,12 +24,11 @@ public class AngleChecker : MonoBehaviour
     public void CheckAngle()
     {
         Vector3 targetDirection = (target.transform.position - transform.position).normalized;
-
+        //Angle math
         float dot = Vector3.Dot(targetDirection, transform.forward);
         float angle = Mathf.Acos(dot) * Mathf.Rad2Deg;
-
+        //Direction math
         Vector3 normalizedDirection = target.transform.position - transform.position;
-
         float targetPosition = Vector3.Cross(transform.forward, normalizedDirection).y;
 
         if (targetPosition > 0)
