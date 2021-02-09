@@ -1,4 +1,5 @@
-﻿using System.Collections;
+using System;
+using System.Collections;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -10,11 +11,12 @@ public class Player : MonoBehaviour
     
     public float atkRange = 2f;
     public float radius = 1f;
+    public float atkCoolDown = 2f;
 
     float horizontal, vertical, speed = 10f;
 
     bool hasCollided = false;
-    bool canAttack = false;
+    bool canAttack = true;
     bool isDead = true;
 
     // Start is called before the first frame update
@@ -29,30 +31,29 @@ public class Player : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.E))
             CheckAngle();
+
         horizontal = Input.GetAxisRaw("Horizontal");
         vertical = Input.GetAxisRaw("Vertical");
 
+        float dist = Vector3.Distance(transform.position, target.transform.position);
+
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            if (hasCollided && canAttack)
-                target.TakeDamage(dmg);
+            DealDamage(dist);
         }
 
-        transform.position += new Vector3(horizontal, 0f, vertical).normalized * speed * Time.deltaTime;
-    }
-
-    private void FixedUpdate()
-    {
-        float dist = Vector3.Distance(transform.position, target.transform.position);
         if (dist < (radius + target.radius))
         {
             hasCollided = true;
-            Debug.Log($"Collided with {target.name}!");
         }
-        if (dist <= atkRange)
-            canAttack = true;
-        else
-            canAttack = false;
+
+            transform.position += new Vector3(horizontal, 0f, vertical).normalized * speed * Time.deltaTime;
+    }
+
+    void DealDamage(float dist)
+    {
+        if (hasCollided && canAttack && dist <= atkRange)
+            StartCoroutine(Attack(atkCoolDown));
     }
 
     public void TakeDamage(int damage)
@@ -63,11 +64,12 @@ public class Player : MonoBehaviour
             isDead = true;
     }
 
-    IEnumerator Attack()
+    IEnumerator Attack(float cooldown)
     {
-        canAttack = false;
+        //Disable ability to attack, deal damage, wait for 2 seconds, enable ability to attack.
         target.TakeDamage(dmg);
-        yield return new WaitForSeconds(2f);
+        canAttack = false;
+        yield return new WaitForSeconds(cooldown);
         canAttack = true;
     }
 
