@@ -10,11 +10,12 @@ public class GridGenerator : MonoBehaviour
     public Vector2 gridSize;
     public float nodeSize; 
     public TerrainType[] walkableRegions;
-    public int obstacleProximityPenalty = 10;
+    public int obstacleProximityPenalty = -10;
     LayerMask walkableMask;
     Dictionary<int, int> walkableRegionsDictionary = new Dictionary<int, int>();
 
     Node[,] grid;
+    List<Node> nonWalkableNodes = new List<Node>();
 
     float nodeDiameter;
     int gridSizeX, gridSizeY;
@@ -45,6 +46,11 @@ public class GridGenerator : MonoBehaviour
         }
     }
 
+    public List<Node> NonWalkableNodes
+    {
+        get => nonWalkableNodes;
+    }
+
     void CreateGrid()
     {
         grid = new Node[gridSizeX, gridSizeY];
@@ -70,6 +76,7 @@ public class GridGenerator : MonoBehaviour
                 if (!walkable)
                 {
                     movementPenalty += obstacleProximityPenalty;
+                    nonWalkableNodes.Add(new Node(walkable, worldPoint, x, y, movementPenalty));
                 }
 
                 if (movementPenalty < penaltyMin)
@@ -82,7 +89,59 @@ public class GridGenerator : MonoBehaviour
         }
     }
 
-    public List<Node> GetNeighbours(Node node)
+    public List<Node> GetNeighbours(Node node, int depth)
+    {
+        List<Node> neighbours = new List<Node>();
+
+        for (int x = -depth; x <= depth; x++)
+        {
+            for (int y = -depth; y <= depth; y++)
+            {
+                if (x == 0 && y == 0)
+                    continue;
+
+                int checkX = node.gridX + x;
+                int checkY = node.gridY + y;
+
+                if (checkX >= 0 && checkX < gridSizeX && checkY >= 0 && checkY < gridSizeY)
+                {
+                    neighbours.Add(grid[checkX, checkY]);
+                }
+            }
+        }
+
+        return neighbours;
+    }
+    public List<Node> GetNeighbours(Node node, bool walkable)
+    {
+        if (walkable)
+            return GetNeighbours(node);
+        
+        List<Node> neighbours = new List<Node>();
+
+        for (int x = -1; x <= 1; x++)
+        {
+            for (int y = -1; y <= 1; y++)
+            {
+                if (x == 0 && y == 0)
+                    continue;
+
+                int checkX = node.gridX + x;
+                int checkY = node.gridY + y;
+
+                if (checkX >= 0 && checkX < gridSizeX && checkY >= 0 && checkY < gridSizeY)
+                {
+                    Node n = grid[checkX, checkY];
+                    if (n.walkable)
+                        neighbours.Add(grid[checkX, checkY]);
+                }
+            }
+        }
+
+        return neighbours;
+    }
+
+    private List<Node> GetNeighbours(Node node)
     {
         List<Node> neighbours = new List<Node>();
 
@@ -127,7 +186,7 @@ public class GridGenerator : MonoBehaviour
             {
                 Gizmos.color = Color.Lerp(Color.white, Color.black, Mathf.InverseLerp(penaltyMin, penaltyMax, n.movementPenalty));
                 Gizmos.color = (n.walkable) ? Gizmos.color : Color.red;
-                Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter / 2f));
+                Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter / 3f));
             }
         }
     }

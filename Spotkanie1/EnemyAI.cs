@@ -20,6 +20,8 @@ public class EnemyAI : MonoBehaviour
     bool isChasing = false;
     bool canAttack = true;
 
+    bool isHiding = false;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -93,7 +95,7 @@ public class EnemyAI : MonoBehaviour
     IEnumerator Attack()
     {
         canAttack = false;
-        player.TakeDamage(dmg);
+        //player.TakeDamage(dmg);
         yield return new WaitForSeconds(2f);
         canAttack = true;
     }

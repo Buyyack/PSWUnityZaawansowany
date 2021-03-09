@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    public EnemyAI target;
-    
+    public EntityAI[] targets;
+
     public int hp = 100;
     public int dmg = 20;
     
@@ -13,7 +13,8 @@ public class Player : MonoBehaviour
     public float radius = 1f;
     public float atkCoolDown = 2f;
 
-    float horizontal, vertical, speed = 10f;
+    float horizontal, vertical;
+    public float speed = 10f;
 
     bool hasCollided = false;
     bool canAttack = true;
@@ -22,18 +23,46 @@ public class Player : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        if (target == null)
+        targets = FindObjectsOfType<EntityAI>();
+        if (targets == null)
             Debug.LogError("No target assigned!");
+    }
+
+    private void FixedUpdate()
+    {
+        if (targets.Length > 0)
+        {
+            foreach (EntityAI target in targets)
+            {
+                Debug.DrawRay(transform.position, target.transform.position - transform.position);
+                Ray ray = new Ray(transform.position, target.transform.position - transform.position);
+                RaycastHit hit;
+                if (Physics.Raycast(ray, out hit, 100f))
+                {
+                    if (hit.collider.gameObject == target.gameObject)
+                    {
+                        target.isHidden = false;
+                    }
+                    else
+                    {
+                        target.isHidden = true;
+                    }
+                    //print($"Raycast hit {hit.collider.gameObject.name}");
+                }
+            }
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.E))
-            CheckAngle();
-
         horizontal = Input.GetAxisRaw("Horizontal");
         vertical = Input.GetAxisRaw("Vertical");
+
+        transform.position += new Vector3(horizontal, 0f, vertical).normalized * speed * Time.deltaTime;
+        /*
+        if (Input.GetKeyDown(KeyCode.E))
+            CheckAngle();
 
         float dist = Vector3.Distance(transform.position, target.transform.position);
 
@@ -47,9 +76,10 @@ public class Player : MonoBehaviour
             hasCollided = true;
         }
 
-            transform.position += new Vector3(horizontal, 0f, vertical).normalized * speed * Time.deltaTime;
+        */
     }
 
+    /*
     void DealDamage(float dist)
     {
         if (hasCollided && canAttack && dist <= atkRange)
@@ -100,4 +130,5 @@ public class Player : MonoBehaviour
 
         Debug.Log($"Target location is: {direction} and the angle between player forward and target = {angle}");
     }
+    */
 }

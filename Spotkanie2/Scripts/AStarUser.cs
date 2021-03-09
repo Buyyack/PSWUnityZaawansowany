@@ -4,21 +4,22 @@ using UnityEngine;
 
 public class AStarUser : MonoBehaviour
 {
-    public Transform target;
-    float speed = 20f;
+    public bool isMoving = false;
+    public float speed = 5f;
     Vector3[] path;
     int targetIndex;
 
-    private void Start()
+    public void SetDestination(Vector3 destination)
     {
-        PathRequestManager.RequestPath(transform.position, target.position, OnPathFound);
+        if (destination != null)
+            PathRequestManager.RequestPath(transform.position, destination, OnPathFound);
     }
 
     public void OnPathFound(Vector3[] newPath, bool pathSuccess)
     {
-        if (pathSuccess)
+        if (pathSuccess && !isMoving)
         {
-            print("NPC has a successful path.");
+            //print("Path found successfuly");
             path = newPath;
             StopCoroutine(FollowPath());
             StartCoroutine(FollowPath());
@@ -27,24 +28,29 @@ public class AStarUser : MonoBehaviour
 
     IEnumerator FollowPath()
     {
-        print("NPC is moving to target location...");
-
-        Vector3 currenWaypoint = path[0];
-
-        while (true)
+        if (path.Length > 0 && !isMoving)
         {
-            if (transform.position == currenWaypoint)
-            {
-                targetIndex++;
-                if (targetIndex >= path.Length)
-                {
-                    yield break;
-                }
-                currenWaypoint = path[targetIndex];
-            }
+            isMoving = true;
+            Vector3 currenWaypoint = path[0];
 
-            transform.position = Vector3.MoveTowards(transform.position, currenWaypoint, speed * Time.deltaTime);
-            yield return null;
+            while (isMoving)
+            {
+                if (transform.position == currenWaypoint)
+                {
+                    targetIndex++;
+                    if (targetIndex >= path.Length)
+                    {
+                        isMoving = false;
+                        yield break;
+                    }
+                    currenWaypoint = path[targetIndex];
+                }
+
+                transform.position = Vector3.MoveTowards(transform.position, currenWaypoint, speed * Time.deltaTime);
+                yield return null;
+            }
+            isMoving = false;
+            yield break;
         }
     }
 }

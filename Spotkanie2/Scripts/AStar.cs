@@ -8,6 +8,11 @@ public class AStar : MonoBehaviour
     PathRequestManager requestManager;
     GridGenerator grid;
 
+    public GridGenerator Grid
+    {
+        get { return grid; }
+    }
+
     void Awake()
     {
         requestManager = GetComponent<PathRequestManager>();
@@ -39,12 +44,11 @@ public class AStar : MonoBehaviour
 
                 if (currentNode == targetNode)
                 {
-                    print("Success! Current node is the target node.");
                     pathSuccess = true;
                     break;
                 }
 
-                foreach (Node neighbour in grid.GetNeighbours(currentNode))
+                foreach (Node neighbour in grid.GetNeighbours(currentNode, true))
                 {
                     if (!neighbour.walkable || closedSet.Contains(neighbour))
                         continue;
@@ -66,7 +70,6 @@ public class AStar : MonoBehaviour
                 }
             }
         }
-        print($"Pathfinding finished within {iteration} iterations. The path found successfuly: {pathSuccess}");
         yield return null;
         if (pathSuccess)
         {
